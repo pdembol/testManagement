@@ -25,5 +25,4 @@ export interface Page {
 
 export interface Api {
     getList<T>(url: string, data?: {}, config?: {}): Promise<PageableResult<T>>;
-    getOne<T>(url: string, data?: {}, config?: {}): Promise<T>;
 }

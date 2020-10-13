@@ -3,7 +3,12 @@ import {createContext, useContext} from "react";
 import CommonsStore from "./CommonsStore";
 
 const url = process.env.REACT_APP_API_URL || "/api";
-const api = new RemoteApi(url);
+
+const headers = {
+    "Travis-API-Version": "3"
+};
+
+const api = new RemoteApi(url,headers);
 const commonsStore = new CommonsStore();
 
 export const mainStore = {
