@@ -24,7 +24,6 @@ export const CustomSnackbar = observer(() => {
 
 
     const handleClose = (event?: React.SyntheticEvent, reason?: string) => {
-            console.log(open);
         commonsStore.closeSnacks();
     };
 

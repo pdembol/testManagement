@@ -1,7 +1,8 @@
 import {createMuiTheme} from "@material-ui/core";
 
 const color = {} as any;
-color.blue = "rgba(125,142,255,0.65)";
+color.blue = "rgb(55,41,167)";
+color.lightBlue = "rgb(79,76,167)";
 color.black = "#000";
 
 
@@ -12,7 +13,7 @@ export const theme = createMuiTheme({
       main: color.blue
     },
     secondary: {
-      main: color.blue
+      main: color.lightBlue
     },
     type: "light"
   }

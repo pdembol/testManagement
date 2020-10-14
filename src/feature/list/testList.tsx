@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useMemo} from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -10,21 +10,27 @@ import Paper from '@material-ui/core/Paper';
 import {TableSortLabel, Typography} from "@material-ui/core";
 import TablePagination from "@material-ui/core/TablePagination";
 import {useStore} from "../../core/stores/stores";
-import {useParams} from "react-router";
+import {useHistory, useLocation} from "react-router";
+import CommonsStore from "../../core/stores/CommonsStore";
+import {stringToColour} from "./stringToColour";
+import {theme} from "../../core/config/theme";
 
-const useStyles = makeStyles({
+export const useUniversalStyles = makeStyles({
     table: {
         minWidth: 650,
     },
     title: {
         padding:'10px',
         flex: '1 1 100%',
+        color:theme.palette.primary.dark
     },
     headerCell:{
         fontWeight:'bold'
+    },
+    carousel:{
+        height:'830px',
     }
 });
-
 
 export interface ColumnModel {
     name:string;
@@ -40,29 +46,64 @@ interface SimpleTableProps {
 type Order = 'asc' | 'desc';
 
 
+const getInitParams = (urlParams: URLSearchParams, commonsStore:CommonsStore) => {
+    let page = 0;
+    Array.from(urlParams).map((param)=>{
+        if(param[0]==="page" && !isNaN(+param[1]) && +param[1]>-1){
+            page = +param[1]
+        } else {
+            commonsStore.newError(`Page should be number > 0` )
+        }
+    });
+
+    return page ;
+};
+
+
 export default function SimpleTable(props:SimpleTableProps) {
 
-    const [page, setPage] = React.useState<number>(0);
+    const location = useLocation();
+    const history = useHistory();
+    const {commonsStore} = useStore();
+
+    const urlParams = useMemo(() => {
+        return new URLSearchParams(location.search);
+    }, [location.search]);
+
+    const queryParams = useMemo(() => {
+        return getInitParams(urlParams, commonsStore);
+    }, [urlParams]);
+
+    const [page, setPage] = React.useState<number>(+queryParams);
     const [order, setOrder] = React.useState<Order>('desc');
     const [orderBy, setOrderBy] = React.useState<string>(props.columns[0].name);
-
     const [total, setTotal] = React.useState<number>(0);
     const [data, setData] = React.useState<any>([]);
     const [rowsPerPage, setRowsPerPage] = React.useState<number>(5);
-    const {commonsStore} = useStore();
 
-    const classes = useStyles();
+    const classes = useUniversalStyles();
     const{title, columns, url} = props;
     const {api} = useStore();
-    const { p } = useParams();
 
     useEffect(() => {
         loadData();
     },[page,rowsPerPage,order,orderBy]);
 
 
+    useEffect(() => {
+        updateUrl();
+    },[page]);
+
+
+    const updateUrl = ()=>{
+        if(urlParams.get("page")==="0"){
+            urlParams.delete("page")
+        }
+        history.push({pathname:location.pathname,
+                        search:`?${urlParams}`})
+    };
+
     const getConfig = () => {
-        console.log(rowsPerPage, rowsPerPage * page);
         return {
             limit:rowsPerPage,
             offset:rowsPerPage * page,
@@ -80,6 +121,7 @@ export default function SimpleTable(props:SimpleTableProps) {
     };
 
     const handleChangePage = (event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
+        urlParams.set("page", newPage.toString());
         setPage(newPage);
     };
 
@@ -107,16 +149,25 @@ export default function SimpleTable(props:SimpleTableProps) {
         setPage(0);
     };
 
+        const pickColor = (name:string, idx:number) => {
+            if(idx%2 === 0) {
+                return stringToColour(name);
+            } else {
+                return "rgb(255,255,255)"
+            }
+    };
+
     return <div>
-        <Typography className={classes.title} variant="h5" id="tableTitle" component="div">
+        <Typography className={classes.title} variant="h5" id="tableTitle">
             {title}
         </Typography>
         <TableContainer component={Paper}>
             <Table className={classes.table} aria-label="simple table">
                 <TableHead>
-                    <TableRow>
+                    <TableRow key={"headerRow"}>
                         {columns.map((column)=>
                             <TableCell align="center"
+                                       key={column.name}
                                        className={classes.headerCell}
                                        sortDirection={orderBy === column.name ? order : false}>
                                 <TableSortLabel
@@ -132,10 +183,10 @@ export default function SimpleTable(props:SimpleTableProps) {
                 </TableHead>
                 <TableBody>
                     {data.length?
-                        data.map((row:any) => (
-                                <TableRow key={row.id}>
+                        data.map((row:any,idx:number) => (
+                                <TableRow key={row.id} style={{backgroundColor:pickColor(row.number, idx)}}>
                                     {columns.map((column)=>
-                                        <TableCell align="center">{row[column.name]}</TableCell>
+                                        <TableCell align="center" key={row.id + column.name}>{row[column.name]}</TableCell>
                                     )}
                                 </TableRow>
                             ))
@@ -143,9 +194,7 @@ export default function SimpleTable(props:SimpleTableProps) {
                         <TableRow key={'empty'}>
                                 <TableCell colSpan={columns.length} align="center" >No data to show</TableCell>
                         </TableRow>
-
                     }
-
                 </TableBody>
             </Table>
         </TableContainer>
