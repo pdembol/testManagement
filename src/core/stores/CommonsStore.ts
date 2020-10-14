@@ -1,17 +1,8 @@
 import {action, makeObservable, observable} from "mobx";
 
-interface CommonError extends Error {
-  message: string;
-  errors?: FieldError[];
-}
-interface FieldError {
-  fieldName: string;
-  message: string;
-}
-
 export default class CommonsStore {
 
-  @observable error?: CommonError;
+  @observable error?: string;
   @observable success?: string;
   @observable sideMenuDrawerExpanded: boolean;
   @observable guiVersion?: string;
@@ -27,7 +18,7 @@ export default class CommonsStore {
   }
 
   @action
-  public newError(error: CommonError) {
+  public newError(error: string) {
     this.closeSnacks();
     this.error = error;
   }
@@ -40,11 +31,7 @@ export default class CommonsStore {
 
   @action
   public closeSnacks() {
-    if (this.success !== undefined) {
       this.success = undefined;
-    }
-    if (this.error !== undefined) {
       this.error = undefined;
-    }
   }
 }

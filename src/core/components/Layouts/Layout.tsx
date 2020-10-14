@@ -5,6 +5,7 @@ import {createStyles, IconButton, makeStyles, Theme} from "@material-ui/core";
 import {GitHub, Info} from "@material-ui/icons";
 import {ListItemObj} from "../../config/items";
 import Tooltip from "@material-ui/core/Tooltip";
+import {CustomSnackbar} from "../SnackBar/SnackBar";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -62,6 +63,7 @@ export const Layout = (props: LayoutInterface) => {
               </IconButton>
           </div>
           {children}
+          <CustomSnackbar/>
         </SideMenu>
       </>
     );

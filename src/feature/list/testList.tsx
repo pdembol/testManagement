@@ -7,9 +7,10 @@ import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
-import {Typography} from "@material-ui/core";
+import {TableSortLabel, Typography} from "@material-ui/core";
 import TablePagination from "@material-ui/core/TablePagination";
 import {useStore} from "../../core/stores/stores";
+import {useParams} from "react-router";
 
 const useStyles = makeStyles({
     table: {
@@ -30,41 +31,73 @@ export interface ColumnModel {
     title:string;
 }
 
-
 interface SimpleTableProps {
     title:string;
     columns:ColumnModel[];
     url:string;
 }
 
-const data:any = [];
+type Order = 'asc' | 'desc';
 
 
 export default function SimpleTable(props:SimpleTableProps) {
 
-    const [page, setPage] = React.useState<number>(1);
-    const [config, setConfig] = React.useState<any>({});
+    const [page, setPage] = React.useState<number>(0);
+    const [order, setOrder] = React.useState<Order>('desc');
+    const [orderBy, setOrderBy] = React.useState<string>(props.columns[0].name);
+
+    const [total, setTotal] = React.useState<number>(0);
     const [data, setData] = React.useState<any>([]);
     const [rowsPerPage, setRowsPerPage] = React.useState<number>(5);
+    const {commonsStore} = useStore();
 
     const classes = useStyles();
-    const length = 10;
     const{title, columns, url} = props;
     const {api} = useStore();
+    const { p } = useParams();
 
     useEffect(() => {
         loadData();
-    },[]);
+    },[page,rowsPerPage,order,orderBy]);
 
+
+    const getConfig = () => {
+        console.log(rowsPerPage, rowsPerPage * page);
+        return {
+            limit:rowsPerPage,
+            offset:rowsPerPage * page,
+            sort_by:orderBy+":"+order
+        }
+    };
 
     const loadData = () =>{
-        api.getList(url,config).then((data:any)=>{
-            setData(data.builds)
+        api.getList(url,getConfig()).then((data:any)=>{
+            setData(data.builds);
+            setTotal(data['@pagination'].count);
+        }).catch((e:any)=>{
+            commonsStore.newError(e.message)
         })
     };
 
     const handleChangePage = (event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
         setPage(newPage);
+    };
+
+    const toggleOrder = () => {
+        if(order ==='asc') {
+            setOrder('desc')
+        }else {
+            setOrder('asc')
+        }
+    };
+
+    const setSorting = (property: any) => (event: React.MouseEvent<unknown>) => {
+        if(property === orderBy){
+            toggleOrder()
+        } else {
+            setOrder('desc');
+            setOrderBy(property)
+        }
     };
 
     const handleChangeRowsPerPage = (
@@ -83,25 +116,43 @@ export default function SimpleTable(props:SimpleTableProps) {
                 <TableHead>
                     <TableRow>
                         {columns.map((column)=>
-                            <TableCell align="center" className={classes.headerCell}>{column.title}</TableCell>
+                            <TableCell align="center"
+                                       className={classes.headerCell}
+                                       sortDirection={orderBy === column.name ? order : false}>
+                                <TableSortLabel
+                                    active={orderBy === column.name}
+                                    direction={orderBy === column.name ? order : 'asc'}
+                                    onClick={setSorting(column.name)}
+                                >
+                                {column.title}
+                                </TableSortLabel>
+                            </TableCell>
                         )}
                     </TableRow>
                 </TableHead>
                 <TableBody>
-                    {data.map((row:any) => (
-                        <TableRow key={row.id}>
-                            {columns.map((column)=>
-                                <TableCell align="center">{row[column.name]}</TableCell>
-                            )}
+                    {data.length?
+                        data.map((row:any) => (
+                                <TableRow key={row.id}>
+                                    {columns.map((column)=>
+                                        <TableCell align="center">{row[column.name]}</TableCell>
+                                    )}
+                                </TableRow>
+                            ))
+                        :
+                        <TableRow key={'empty'}>
+                                <TableCell colSpan={columns.length} align="center" >No data to show</TableCell>
                         </TableRow>
-                    ))}
+
+                    }
+
                 </TableBody>
             </Table>
         </TableContainer>
         <TablePagination
             rowsPerPageOptions={[5, 10, 15]}
             component="div"
-            count={length}
+            count={total}
             rowsPerPage={rowsPerPage}
             page={page}
             onChangePage={handleChangePage}
