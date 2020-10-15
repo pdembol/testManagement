@@ -24,7 +24,9 @@ function Index() {
         <div>
             <SimpleTable title={"Branches"}
                          resourceName={"branches"}
-                         columns={columns}/>
+                         columns={columns}
+                         filterField={"name"}
+            />
         </div>
     );
 }

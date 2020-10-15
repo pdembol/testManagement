@@ -118,15 +118,14 @@ export const SideMenu = observer(
                         }),
                     }}
                 >
-          <span className={classes.appTitle}>
-            <Link to={landingPageLink ? landingPageLink : ""}>
-            <Typography variant="h6" noWrap={true}>
-                <img alt="logo" className={classes.image} src={logoSrc}/>
-              </Typography>
-            </Link>
-            <Typography variant={"h6"}>{appTitle}</Typography>
-          </span>
-
+                  <span className={classes.appTitle}>
+                    <Link to={landingPageLink ? landingPageLink : ""}>
+                    <Typography variant="h6" noWrap={true}>
+                        <img alt="logo" className={classes.image} src={logoSrc}/>
+                      </Typography>
+                    </Link>
+                    <Typography variant={"h6"}>{appTitle}</Typography>
+                  </span>
                     <div className={classes.listItems}>
                         <List>
                             {items.map(value => {

@@ -10,7 +10,6 @@ import {theme} from "./core/config/theme";
 import {mainStore, StoreContext} from "./core/stores/stores";
 import {mainView} from "./feature/layout/mainView";
 
-
 function App() {
     const history = createBrowserHistory();
     return (

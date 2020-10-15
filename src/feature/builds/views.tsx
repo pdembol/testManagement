@@ -15,7 +15,8 @@ export const Builds = {
 const columns: ColumnModel[] = [
     {name: "id", title: "Id"},
     {name: "number", title: "Number"},
-    {name: "state", title: "Data"},
+    {name: "state", title: "State"},
+    {name: "event_type", title: "Event type"},
     {name: "started_at", title: "Started at"},
     {name: "finished_at", title: "Finished at"},
 
@@ -26,7 +27,9 @@ function Index() {
         <div>
             <SimpleTable title={"Builds"}
                          resourceName={"builds"}
-                         columns={columns}/>
+                         columns={columns}
+                         filterField={"event_type"}
+            />
         </div>
     );
 }

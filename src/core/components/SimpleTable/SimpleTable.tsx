@@ -14,6 +14,7 @@ import {useHistory, useLocation} from "react-router";
 import CommonsStore from "../../stores/CommonsStore";
 import {stringToColour} from "../../helpers/stringToColour";
 import {theme} from "../../config/theme";
+import {SearchField} from "../SearchField/SearchField";
 
 export const useUniversalStyles = makeStyles({
     table: {
@@ -22,7 +23,8 @@ export const useUniversalStyles = makeStyles({
     title: {
         padding: '10px',
         flex: '1 1 100%',
-        color: theme.palette.primary.dark
+        color: theme.palette.primary.dark,
+        float: 'left'
     },
     headerCell: {
         fontWeight: 'bold'
@@ -41,6 +43,7 @@ interface SimpleTableProps {
     title: string;
     columns: ColumnModel[];
     resourceName: string;
+    filterField?: string;
 }
 
 type Order = 'asc' | 'desc';
@@ -74,6 +77,7 @@ export default function SimpleTable(props: SimpleTableProps) {
     }, [urlParams]);
 
     const [page, setPage] = React.useState<number>(+queryParams);
+    const [searchText, setSearchText] = React.useState<string>("");
     const [loading, setLoading] = React.useState<boolean>(false);
     const [order, setOrder] = React.useState<Order>('desc');
     const [orderBy, setOrderBy] = React.useState<string>(props.columns[0].name);
@@ -87,7 +91,7 @@ export default function SimpleTable(props: SimpleTableProps) {
 
     useEffect(() => {
         loadData();
-    }, [page, rowsPerPage, order, orderBy]);
+    }, [page, rowsPerPage, order, orderBy, searchText]);
 
 
     useEffect(() => {
@@ -106,11 +110,15 @@ export default function SimpleTable(props: SimpleTableProps) {
     };
 
     const getConfig = () => {
-        return {
+        const searchConfig: any = {
             limit: rowsPerPage,
             offset: rowsPerPage * page,
             sort_by: orderBy + ":" + order
+        };
+        if (props.filterField && searchText!=="") {
+            searchConfig[props.filterField] = searchText
         }
+        return searchConfig;
     };
 
     const loadData = () => {
@@ -153,6 +161,10 @@ export default function SimpleTable(props: SimpleTableProps) {
         setPage(0);
     };
 
+    const handleSearch = (text: string) => {
+        setSearchText(text)
+    };
+
     const pickColor = (name: string, idx: number) => {
         if (idx % 2 === 0 && name) {
             return stringToColour(name);
@@ -165,6 +177,15 @@ export default function SimpleTable(props: SimpleTableProps) {
         <Typography className={classes.title} variant="h5" id="tableTitle">
             {title}
         </Typography>
+
+        {props.filterField ?
+            <SearchField
+                placeholder={"Search by " + props.filterField}
+                executeSearch={handleSearch}/>
+            :
+            null
+        }
+
         <TableContainer component={Paper}>
             <Table className={classes.table} aria-label="simple table">
                 <TableHead>
