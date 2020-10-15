@@ -68,15 +68,17 @@ const useStyles = makeStyles((theme: Theme) =>
             backgroundColor: theme.palette.background.paper,
             width: drawerWidth - 1
         },
-        toolbar: {
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "flex-end",
-            padding: "0 8px",
-            ...theme.mixins.toolbar
-        },
         icons: {
             color: theme.palette.secondary.light
+        },
+        link: {
+            textDecoration: "none"
+        },
+        image: {
+            marginLeft: 10,
+            marginRight: 10,
+            marginTop: 8,
+            maxWidth: 40
         }
     }),
 );
@@ -118,13 +120,8 @@ export const SideMenu = observer(
                 >
           <span className={classes.appTitle}>
             <Link to={landingPageLink ? landingPageLink : ""}>
-            <Typography variant="h6" color={"primary"} noWrap={true}>
-                <img alt="logo" style={{
-                    marginLeft: 10,
-                    marginRight: 10,
-                    marginTop: 8,
-                    maxWidth: 40
-                }} src={logoSrc}/>
+            <Typography variant="h6" noWrap={true}>
+                <img alt="logo" className={classes.image} src={logoSrc}/>
               </Typography>
             </Link>
             <Typography variant={"h6"}>{appTitle}</Typography>
@@ -133,7 +130,7 @@ export const SideMenu = observer(
                     <div className={classes.listItems}>
                         <List>
                             {items.map(value => {
-                                return <NavLink to={value.to} key={value.key + "nav"}>
+                                return <NavLink to={value.to} key={value.key + "nav"} className={classes.link}>
                                     <ListItem button key={value.key}>
                                         <ListItemIcon className={classes.icons}>{value.icon}</ListItemIcon>
                                         <ListItemText primary={value.title}/>

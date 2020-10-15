@@ -1,5 +1,5 @@
 import React, {useEffect, useMemo} from 'react';
-import { makeStyles } from '@material-ui/core/styles';
+import {makeStyles} from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
@@ -7,60 +7,59 @@ import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
-import {TableSortLabel, Typography} from "@material-ui/core";
+import {CircularProgress, TableSortLabel, Typography} from "@material-ui/core";
 import TablePagination from "@material-ui/core/TablePagination";
-import {useStore} from "../../core/stores/stores";
+import {useStore} from "../../stores/stores";
 import {useHistory, useLocation} from "react-router";
-import CommonsStore from "../../core/stores/CommonsStore";
-import {stringToColour} from "./stringToColour";
-import {theme} from "../../core/config/theme";
+import CommonsStore from "../../stores/CommonsStore";
+import {stringToColour} from "../../helpers/stringToColour";
+import {theme} from "../../config/theme";
 
 export const useUniversalStyles = makeStyles({
     table: {
         minWidth: 650,
     },
     title: {
-        padding:'10px',
+        padding: '10px',
         flex: '1 1 100%',
-        color:theme.palette.primary.dark
+        color: theme.palette.primary.dark
     },
-    headerCell:{
-        fontWeight:'bold'
+    headerCell: {
+        fontWeight: 'bold'
     },
-    carousel:{
-        height:'830px',
+    carousel: {
+        height: '830px',
     }
 });
 
 export interface ColumnModel {
-    name:string;
-    title:string;
+    name: string;
+    title: string;
 }
 
 interface SimpleTableProps {
-    title:string;
-    columns:ColumnModel[];
-    url:string;
+    title: string;
+    columns: ColumnModel[];
+    resourceName: string;
 }
 
 type Order = 'asc' | 'desc';
 
 
-const getInitParams = (urlParams: URLSearchParams, commonsStore:CommonsStore) => {
+const getInitParams = (urlParams: URLSearchParams, commonsStore: CommonsStore) => {
     let page = 0;
-    Array.from(urlParams).map((param)=>{
-        if(param[0]==="page" && !isNaN(+param[1]) && +param[1]>-1){
+    Array.from(urlParams).map((param) => {
+        if (param[0] === "page" && !isNaN(+param[1]) && +param[1] > -1) {
             page = +param[1]
         } else {
-            commonsStore.newError(`Page should be number > 0` )
+            commonsStore.newError(`Page should be number > 0`)
         }
     });
-
-    return page ;
+    return page;
 };
 
 
-export default function SimpleTable(props:SimpleTableProps) {
+export default function SimpleTable(props: SimpleTableProps) {
 
     const location = useLocation();
     const history = useHistory();
@@ -75,6 +74,7 @@ export default function SimpleTable(props:SimpleTableProps) {
     }, [urlParams]);
 
     const [page, setPage] = React.useState<number>(+queryParams);
+    const [loading, setLoading] = React.useState<boolean>(false);
     const [order, setOrder] = React.useState<Order>('desc');
     const [orderBy, setOrderBy] = React.useState<string>(props.columns[0].name);
     const [total, setTotal] = React.useState<number>(0);
@@ -82,40 +82,44 @@ export default function SimpleTable(props:SimpleTableProps) {
     const [rowsPerPage, setRowsPerPage] = React.useState<number>(5);
 
     const classes = useUniversalStyles();
-    const{title, columns, url} = props;
+    const {title, columns, resourceName} = props;
     const {api} = useStore();
 
     useEffect(() => {
         loadData();
-    },[page,rowsPerPage,order,orderBy]);
+    }, [page, rowsPerPage, order, orderBy]);
 
 
     useEffect(() => {
         updateUrl();
-    },[page]);
+    }, [page]);
 
 
-    const updateUrl = ()=>{
-        if(urlParams.get("page")==="0"){
+    const updateUrl = () => {
+        if (urlParams.get("page") === "0") {
             urlParams.delete("page")
         }
-        history.push({pathname:location.pathname,
-                        search:`?${urlParams}`})
+        history.push({
+            pathname: location.pathname,
+            search: `?${urlParams}`
+        })
     };
 
     const getConfig = () => {
         return {
-            limit:rowsPerPage,
-            offset:rowsPerPage * page,
-            sort_by:orderBy+":"+order
+            limit: rowsPerPage,
+            offset: rowsPerPage * page,
+            sort_by: orderBy + ":" + order
         }
     };
 
-    const loadData = () =>{
-        api.getList(url,getConfig()).then((data:any)=>{
-            setData(data.builds);
+    const loadData = () => {
+        setLoading(true);
+        api.getList(resourceName, getConfig()).then((data: any) => {
+            setLoading(false);
+            setData(data[resourceName]);
             setTotal(data['@pagination'].count);
-        }).catch((e:any)=>{
+        }).catch((e: any) => {
             commonsStore.newError(e.message)
         })
     };
@@ -126,15 +130,15 @@ export default function SimpleTable(props:SimpleTableProps) {
     };
 
     const toggleOrder = () => {
-        if(order ==='asc') {
+        if (order === 'asc') {
             setOrder('desc')
-        }else {
+        } else {
             setOrder('asc')
         }
     };
 
     const setSorting = (property: any) => (event: React.MouseEvent<unknown>) => {
-        if(property === orderBy){
+        if (property === orderBy) {
             toggleOrder()
         } else {
             setOrder('desc');
@@ -149,12 +153,12 @@ export default function SimpleTable(props:SimpleTableProps) {
         setPage(0);
     };
 
-        const pickColor = (name:string, idx:number) => {
-            if(idx%2 === 0) {
-                return stringToColour(name);
-            } else {
-                return "rgb(255,255,255)"
-            }
+    const pickColor = (name: string, idx: number) => {
+        if (idx % 2 === 0 && name) {
+            return stringToColour(name);
+        } else {
+            return "rgb(255,255,255)"
+        }
     };
 
     return <div>
@@ -165,34 +169,42 @@ export default function SimpleTable(props:SimpleTableProps) {
             <Table className={classes.table} aria-label="simple table">
                 <TableHead>
                     <TableRow key={"headerRow"}>
-                        {columns.map((column)=>
+                        {columns.map((column, idx) =>
                             <TableCell align="center"
-                                       key={column.name}
+                                       key={"headCell" + idx}
                                        className={classes.headerCell}
                                        sortDirection={orderBy === column.name ? order : false}>
                                 <TableSortLabel
                                     active={orderBy === column.name}
+                                    key={"sortLabel" + idx}
                                     direction={orderBy === column.name ? order : 'asc'}
                                     onClick={setSorting(column.name)}
                                 >
-                                {column.title}
+                                    {column.title}
                                 </TableSortLabel>
                             </TableCell>
                         )}
                     </TableRow>
                 </TableHead>
                 <TableBody>
-                    {data.length?
-                        data.map((row:any,idx:number) => (
-                                <TableRow key={row.id} style={{backgroundColor:pickColor(row.number, idx)}}>
-                                    {columns.map((column)=>
-                                        <TableCell align="center" key={row.id + column.name}>{row[column.name]}</TableCell>
-                                    )}
-                                </TableRow>
-                            ))
+                    {data.length ?
+                        data.map((row: any, idx: number) => (
+                            <TableRow key={"genericRow" + idx}
+                                      style={{backgroundColor: pickColor(row.number || row.name, idx)}}>
+                                {columns.map((column, idx2) =>
+                                    <TableCell align="center"
+                                               key={"genericCell" + idx + "at" + idx2}>{row[column.name] + ""}</TableCell>
+                                )}
+                            </TableRow>
+                        ))
                         :
                         <TableRow key={'empty'}>
-                                <TableCell colSpan={columns.length} align="center" >No data to show</TableCell>
+                            <TableCell colSpan={columns.length} align="center" key={"emptyCell"}>
+                                {
+                                    loading ? <CircularProgress/> : <>No data to show</>
+                                }
+
+                            </TableCell>
                         </TableRow>
                     }
                 </TableBody>

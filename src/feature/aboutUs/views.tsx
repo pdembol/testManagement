@@ -3,7 +3,7 @@ import {Route, RouteComponentProps, Switch} from "react-router";
 import "react-responsive-carousel/lib/styles/carousel.min.css"; // requires a loader
 import {Carousel} from "react-responsive-carousel";
 import {Typography} from "@material-ui/core";
-import {useUniversalStyles} from "../list/testList";
+import {useUniversalStyles} from "../../core/components/SimpleTable/SimpleTable";
 
 export const About = {
     url: "aboutUs",
@@ -16,16 +16,15 @@ export const About = {
 };
 
 function Index() {
-
     const classes = useUniversalStyles();
     const carousel1 = process.env.PUBLIC_URL + "/carousel1.jpg";
     const carousel2 = process.env.PUBLIC_URL + "/carousel2.jpg";
     const carousel3 = process.env.PUBLIC_URL + "/carousel3.jpg";
     return (<div>
-        <Typography className={classes.title} variant="h5" id="tableTitle">
-            About us
-        </Typography>
-        <Carousel>
+            <Typography className={classes.title} variant="h5" id="tableTitle">
+                About us
+            </Typography>
+            <Carousel>
                 <div className={classes.carousel}>
                     <img src={carousel1}/>
                     <p className="legend">Hard work</p>
@@ -42,4 +41,4 @@ function Index() {
 
         </div>
     );
-};
+}

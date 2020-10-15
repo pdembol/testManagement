@@ -1,9 +1,10 @@
 import React from 'react';
 import Snackbar from '@material-ui/core/Snackbar';
-import { makeStyles, Theme } from '@material-ui/core/styles';
+import {makeStyles, Theme} from '@material-ui/core/styles';
 import {useStore} from "../../stores/stores";
-import MuiAlert, { AlertProps } from '@material-ui/lab/Alert';
+import MuiAlert, {AlertProps} from '@material-ui/lab/Alert';
 import {observer} from "mobx-react-lite";
+
 function Alert(props: AlertProps) {
     return <MuiAlert elevation={6} variant="filled" {...props} />;
 }
@@ -30,7 +31,7 @@ export const CustomSnackbar = observer(() => {
     return (
         <div className={classes.root}>
             <Snackbar open={open} autoHideDuration={3000} onClose={handleClose}>
-                <Alert onClose={handleClose} severity={commonsStore.success? "success" : "error"}>
+                <Alert onClose={handleClose} severity={commonsStore.success ? "success" : "error"}>
                     {commonsStore.success || commonsStore.error}
                 </Alert>
             </Snackbar>
